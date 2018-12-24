@@ -1,15 +1,15 @@
 grammar MySQLAlterTable;
+
 import MySQLKeyword, Keyword, MySQLTableBase, MySQLBase, BaseRule, DataType, Symbol;
 
 alterTable
-    : ALTER TABLE tableName
-    alterSpecifications?
+    : ALTER TABLE tableName alterSpecifications?
     ;
-
+    
 alterSpecifications
     : alterSpecification (COMMA alterSpecification)*
     ;
-
+    
 alterSpecification
     : tableOptions
     | addColumn
@@ -49,20 +49,19 @@ alterSpecification
     | REMOVE PARTITIONING
     | UPGRADE PARTITIONING
     ;
-
+    
 singleColumn
     : columnDefinition firstOrAfterColumn?
     ;
-
+    
 firstOrAfterColumn
-    : FIRST
-	| AFTER columnName
+    : FIRST | AFTER columnName
     ;
-
+    
 multiColumn
     : LP_ columnDefinition (COMMA columnDefinition)* RP_
     ;
-
+    
 addConstraint
     : ADD constraintDefinition
     ;
@@ -70,19 +69,19 @@ addConstraint
 addIndex
     : ADD indexDefinition
     ;
- 
+    
 addColumn
     : ADD COLUMN? (singleColumn | multiColumn)
-    ;   
+    ;
     
 changeColumn
     : changeColumnOp columnName columnDefinition firstOrAfterColumn?
     ;
-
+    
 changeColumnOp
     : CHANGE COLUMN?
     ;
-
+    
 dropColumn:
     DROP COLUMN? columnName
     ;
@@ -90,27 +89,27 @@ dropColumn:
 dropIndexDef
     : DROP indexAndKey indexName
     ;
-
+    
 dropPrimaryKey
     : DROP primaryKey
     ;
-
+    
 fkSymbol
     : ID
     ;
-
+    
 modifyColumn
     : MODIFY COLUMN? columnDefinition firstOrAfterColumn?
     ;
-
+    
 renameIndex
     : RENAME indexAndKey indexName TO indexName
     ;
-
+    
 renameTable
     : RENAME (TO|AS)? tableName
     ;
-
+    
 partitionNames
     : partitionName (COMMA partitionName)*
     ;

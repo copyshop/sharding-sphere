@@ -18,14 +18,13 @@
 package io.shardingsphere.core.parsing.antlr.extractor.util;
 
 import com.google.common.base.Optional;
-import io.shardingsphere.core.parsing.antlr.extractor.phrase.RuleName;
-import io.shardingsphere.core.parsing.antlr.sql.ddl.ColumnDefinition;
-import io.shardingsphere.core.parsing.antlr.sql.ddl.ColumnPosition;
-import io.shardingsphere.core.parsing.lexer.token.Symbol;
-import io.shardingsphere.core.parsing.parser.token.IndexToken;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+
+import java.util.Collection;
+import java.util.LinkedList;
 
 /**
  * Extractor utility.
@@ -36,71 +35,80 @@ import org.antlr.v4.runtime.ParserRuleContext;
 public final class ExtractorUtils {
     
     /**
-     * Extract column definition.
+     * Find first child node.
      *
-     * @param columnDefinitionNode column definition rule
-     * @return column definition
+     * @param node start node
+     * @param ruleName rule name
+     * @return matched node
      */
-    public static Optional<ColumnDefinition> extractColumnDefinition(final ParserRuleContext columnDefinitionNode) {
-        Optional<ParserRuleContext> columnNameNode = ASTUtils.findFirstChildNode(columnDefinitionNode, RuleName.COLUMN_NAME);
-        if (!columnNameNode.isPresent()) {
-            return Optional.absent();
+    public static Optional<ParserRuleContext> findFirstChildNode(final ParserRuleContext node, final RuleName ruleName) {
+        if (isMatchedNode(node, ruleName)) {
+            return Optional.of(node);
         }
-        Optional<ParserRuleContext> dataTypeContext = ASTUtils.findFirstChildNode(columnDefinitionNode, RuleName.DATA_TYPE);
-        Optional<String> typeName = dataTypeContext.isPresent() ? Optional.of(dataTypeContext.get().getChild(0).getText()) : Optional.<String>absent();
-        Optional<Integer> dataTypeLength = dataTypeContext.isPresent() ? getDataTypeLength(dataTypeContext.get()) : Optional.<Integer>absent();
-        boolean primaryKey = ASTUtils.findFirstChildNode(columnDefinitionNode, RuleName.PRIMARY_KEY).isPresent();
-        return Optional.of(new ColumnDefinition(columnNameNode.get().getText(), typeName.orNull(), dataTypeLength.orNull(), primaryKey));
-    }
-    
-    private static Optional<Integer> getDataTypeLength(final ParserRuleContext dataTypeContext) {
-        Optional<ParserRuleContext> dataTypeLengthContext = ASTUtils.findFirstChildNode(dataTypeContext, RuleName.DATA_TYPE_LENGTH);
-        if (!dataTypeLengthContext.isPresent() || dataTypeLengthContext.get().getChildCount() < 3) {
-            return Optional.absent();
+        for (int i = 0; i < node.getChildCount(); i++) {
+            ParseTree child = node.getChild(i);
+            if (child instanceof ParserRuleContext) {
+                Optional<ParserRuleContext> result = findFirstChildNode((ParserRuleContext) child, ruleName);
+                if (result.isPresent()) {
+                    return result;
+                }
+            }
         }
-        try {
-            return Optional.of(Integer.parseInt(dataTypeLengthContext.get().getChild(1).getText()));
-        } catch (final NumberFormatException ignored) {
-            return Optional.absent();
-        }
+        return Optional.absent();
     }
     
     /**
-     * Extract column position.
-     *
-     * @param ancestorNode ancestor node of AST
-     * @param columnName column name
-     * @return column position object
+     * Find first child node none recursive.
+     * 
+     * @param node start node
+     * @param ruleName rule name
+     * @return matched node
      */
-    public static Optional<ColumnPosition> extractFirstOrAfterColumn(final ParserRuleContext ancestorNode, final String columnName) {
-        Optional<ParserRuleContext> firstOrAfterColumnContext = ASTUtils.findFirstChildNode(ancestorNode, RuleName.FIRST_OR_AFTER_COLUMN);
-        if (!firstOrAfterColumnContext.isPresent()) {
-            return Optional.absent();
+    public static Optional<ParserRuleContext> findFirstChildNodeNoneRecursive(final ParserRuleContext node, final RuleName ruleName) {
+        if (isMatchedNode(node, ruleName)) {
+            return Optional.of(node);
         }
-        Optional<ParserRuleContext> columnNameContext = ASTUtils.findFirstChildNode(firstOrAfterColumnContext.get(), RuleName.COLUMN_NAME);
-        ColumnPosition result = new ColumnPosition();
-        result.setStartIndex(firstOrAfterColumnContext.get().getStart().getStartIndex());
-        if (columnNameContext.isPresent()) {
-            result.setColumnName(columnName);
-            result.setAfterColumn(columnNameContext.get().getText());
-        } else {
-            result.setFirstColumn(columnName);
+        for (int i = 0; i < node.getChildCount(); i++) {
+            if (node.getChild(i) instanceof ParserRuleContext) {
+                ParserRuleContext child = (ParserRuleContext) node.getChild(i);
+                if (isMatchedNode(child, ruleName)) {
+                    return Optional.of(child);
+                }
+            }
         }
-        return Optional.of(result);
+        return Optional.absent();
     }
     
     /**
-     * Extract index node.
+     * Get all descendant nodes.
      *
-     * @param indexNameContext index name context
-     * @param tableName  table name
-     * @return index token
+     * @param node start node
+     * @param ruleName rule name
+     * @return all descendant nodes
      */
-    public static IndexToken extractIndex(final ParserRuleContext indexNameContext, final String tableName) {
-        return new IndexToken(indexNameContext.getStop().getStartIndex(), getIndexName(indexNameContext.getText()), tableName);
+    public static Collection<ParserRuleContext> getAllDescendantNodes(final ParserRuleContext node, final RuleName ruleName) {
+        Collection<ParserRuleContext> result = new LinkedList<>();
+        if (isMatchedNode(node, ruleName)) {
+            result.add(node);
+        }
+        for (ParserRuleContext each : getChildrenNodes(node)) {
+            result.addAll(getAllDescendantNodes(each, ruleName));
+        }
+        return result;
     }
     
-    private static String getIndexName(final String text) {
-        return text.contains(Symbol.DOT.getLiterals()) ? text.substring(text.lastIndexOf(Symbol.DOT.getLiterals()) + Symbol.DOT.getLiterals().length()) : text;
+    private static boolean isMatchedNode(final ParserRuleContext node, final RuleName ruleName) {
+        return ruleName.getName().equals(node.getClass().getSimpleName());
+    }
+    
+    private static Collection<ParserRuleContext> getChildrenNodes(final ParserRuleContext node) {
+        Collection<ParserRuleContext> result = new LinkedList<>();
+        for (int i = 0; i < node.getChildCount(); i++) {
+            ParseTree child = node.getChild(i);
+            if (child instanceof ParserRuleContext) {
+                result.add((ParserRuleContext) child);
+            }
+        }
+        return result;
     }
 }

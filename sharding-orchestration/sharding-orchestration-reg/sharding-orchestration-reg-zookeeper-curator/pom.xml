@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.shardingsphere</groupId>
         <artifactId>sharding-orchestration-reg</artifactId>
-        <version>3.0.1-SNAPSHOT</version>
+        <version>3.1.0.M1</version>
     </parent>
     <artifactId>sharding-orchestration-reg-zookeeper-curator</artifactId>
     <name>${project.artifactId}</name>
@@ -17,7 +17,6 @@
             <artifactId>sharding-orchestration-reg-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-framework</artifactId>
@@ -30,7 +29,6 @@
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>

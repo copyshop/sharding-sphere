@@ -1,48 +1,45 @@
 grammar SQLServerTCLStatement;
 
-import SQLServerKeyword, Keyword,SQLServerBase, DataType, Symbol;
+import SQLServerKeyword, Keyword, SQLServerBase, DataType, Symbol;
 
-/**
- * each statement has a url, 
- * each base url : https://docs.microsoft.com/en-us/sql/t-sql/language-elements/.
- */
-//begin-transaction-transact-sql?view=sql-server-2017    
 setTransaction
     : SET TRANSACTION ISOLATION LEVEL
     (
-    	READ (UNCOMMITTED | COMMITTED)
-      | REPEATABLE READ
-      | SNAPSHOT
-      | SERIALIZABLE
-      | ISOLATION LEVEL READ UNCOMMITTED
+        READ (UNCOMMITTED | COMMITTED)
+        | REPEATABLE READ
+        | SNAPSHOT
+        | SERIALIZABLE
     )
     ;
-
-//commit-transaction-transact-sql?view=sql-server-2017
-//commit-work-transact-sql?view=sql-server-2017
+    
 commit
     : COMMIT 
     (
-    	((TRAN | TRANSACTION) ID?)? (WITH LP_ DELAYED_DURABILITY EQ_ (OFF | ON) RP_)?
-    	| WORK?
+        ((TRAN | TRANSACTION) ID?)? (WITH LP_ DELAYED_DURABILITY EQ_ (OFF | ON) RP_)?
+        | WORK?
     )
     ;
-
-//rollback-transaction-transact-sql?view=sql-server-2017
+    
 rollback
     : ROLLBACK  
     (
-    	(TRAN | TRANSACTION) ID?
-       | WORK?
+        (TRAN | TRANSACTION) ID?
+        | WORK?
     )
     ;
-
-//save-transaction-transact-sql?view=sql-server-2017
+    
 savepoint
     : SAVE (TRAN | TRANSACTION) ID
     ;
     
-//begin-transaction-transact-sql?view=sql-server-2017
 beginWork
-    : BEGIN (TRAN | TRANSACTION) (ID ( WITH MARK STRING)?)?
+    : BEGIN (TRAN | TRANSACTION) (ID (WITH MARK STRING)?)?
+    ;
+
+setAutoCommit
+    : (IF AT_ AT_ TRANCOUNT GT NUMBER COMMIT TRAN)? SET IMPLICIT_TRANSACTIONS autoCommitValue
+    ;
+
+autoCommitValue
+    : ON | OFF
     ;

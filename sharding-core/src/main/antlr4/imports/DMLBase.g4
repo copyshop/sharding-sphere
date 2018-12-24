@@ -3,10 +3,7 @@ grammar DMLBase;
 import Keyword, MySQLBase, DQLBase, BaseRule, DataType, Symbol;
 
 execute
-    : select
-    | insert
-    | update
-    | delete
+    : insert | update | delete
     ;
     
 fromClause 
@@ -17,48 +14,30 @@ whereClause
     : WHERE expr
     ;
     
-groupByClause
-    : GROUP BY groupByItem (COMMA groupByItem)* 
-    (WITH ROLLUP)? 
-    havingClause?
-    ;
-    
 havingClause
     : HAVING  expr
     ;
     
 orderByClause
-    : ORDER BY groupByItem (COMMA groupByItem)*
-    ;
-    
-groupByItem:
-    (columnName | NUMBER |expr)  (ASC|DESC)?
+    : ORDER BY orderByItem (COMMA orderByItem)*
     ;
     
 limitClause
     : LIMIT rangeClause
     ;
-
-//define delete rule template
+    
 delete: 
-    deleteClause 
-    whereClause? 
-    orderByClause? 
-    limitClause?
+    deleteClause whereClause? orderByClause? limitClause?
     ;
     
 partitionClause 
     : PARTITION idList
     ;
-
+    
 update: 
-    updateClause 
-    setClause 
-    whereClause? 
-    orderByClause? 
-    limitClause?
+    updateClause setClause whereClause? orderByClause? limitClause?
     ;
-
+    
 setClause 
     : SET assignmentList
     ;
@@ -70,15 +49,19 @@ assignmentList
 assignment
     : columnName EQ_ value
     ;
-
-insert:
-    ;
-
-deleteClause:
+    
+insert
+    :
     ;
     
-updateClause:
+deleteClause
+    :
     ;
 
-updateSpec: 
+updateClause
+    :
+    ;
+
+updateSpec 
+    :
     ;

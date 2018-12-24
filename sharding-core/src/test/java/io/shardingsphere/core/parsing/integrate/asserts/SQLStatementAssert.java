@@ -17,7 +17,7 @@
 
 package io.shardingsphere.core.parsing.integrate.asserts;
 
-import io.shardingsphere.core.parsing.antlr.sql.ddl.AlterTableStatement;
+import io.shardingsphere.core.parsing.antlr.sql.statement.ddl.AlterTableStatement;
 import io.shardingsphere.core.parsing.integrate.asserts.condition.ConditionAssert;
 import io.shardingsphere.core.parsing.integrate.asserts.groupby.GroupByAssert;
 import io.shardingsphere.core.parsing.integrate.asserts.index.IndexAssert;
@@ -28,10 +28,12 @@ import io.shardingsphere.core.parsing.integrate.asserts.orderby.OrderByAssert;
 import io.shardingsphere.core.parsing.integrate.asserts.table.AlterTableAssert;
 import io.shardingsphere.core.parsing.integrate.asserts.table.TableAssert;
 import io.shardingsphere.core.parsing.integrate.asserts.token.TokenAssert;
+import io.shardingsphere.core.parsing.integrate.asserts.transaction.TransactionAssert;
 import io.shardingsphere.core.parsing.integrate.jaxb.root.ParserResult;
 import io.shardingsphere.core.parsing.parser.sql.SQLStatement;
 import io.shardingsphere.core.parsing.parser.sql.ddl.create.table.CreateTableStatement;
 import io.shardingsphere.core.parsing.parser.sql.dql.select.SelectStatement;
+import io.shardingsphere.core.parsing.parser.sql.tcl.TCLStatement;
 import io.shardingsphere.test.sql.SQLCaseType;
 import io.shardingsphere.test.sql.SQLCasesLoader;
 
@@ -66,6 +68,8 @@ public final class SQLStatementAssert {
     
     private final AlterTableAssert alterTableAssert;
     
+    private final TransactionAssert transactionAssert;
+    
     public SQLStatementAssert(final SQLStatement actual, final String sqlCaseId, final SQLCaseType sqlCaseType) {
         this(actual, sqlCaseId, sqlCaseType, SQLCasesLoader.getInstance(), ParserResultSetLoader.getInstance());
     }
@@ -84,6 +88,7 @@ public final class SQLStatementAssert {
         limitAssert = new LimitAssert(sqlCaseType, assertMessage);
         metaAssert = new TableMetaDataAssert(assertMessage);
         alterTableAssert = new AlterTableAssert(assertMessage);
+        transactionAssert = new TransactionAssert(assertMessage);
     }
     
     /**
@@ -100,14 +105,16 @@ public final class SQLStatementAssert {
         if (actual instanceof CreateTableStatement) {
             assertCreateTableStatement((CreateTableStatement) actual);
         }
-        
         if (actual instanceof AlterTableStatement) {
             assertAlterTableStatement((AlterTableStatement) actual);
+        }
+        if (actual instanceof TCLStatement) {
+            assertTCLStatement((TCLStatement) actual);
         }
     }
     
     private void assertSelectStatement(final SelectStatement actual) {
-        itemAssert.assertItems(actual.getItems(), expected.getAggregationSelectItems());
+        itemAssert.assertItems(actual.getItems(), expected.getSelectItems());
         groupByAssert.assertGroupByItems(actual.getGroupByItems(), expected.getGroupByColumns());
         orderByAssert.assertOrderByItems(actual.getOrderByItems(), expected.getOrderByColumns());
         limitAssert.assertLimit(actual.getLimit(), expected.getLimit());
@@ -121,5 +128,9 @@ public final class SQLStatementAssert {
         if (null != expected.getAlterTable()) {
             alterTableAssert.assertAlterTable(actual, expected.getAlterTable());
         }
+    }
+    
+    private void assertTCLStatement(final TCLStatement actual) {
+        transactionAssert.assertTransactionOperationType(actual.getOperationType(), expected.getTransactionOperationType());
     }
 }

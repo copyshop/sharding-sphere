@@ -20,9 +20,10 @@ package io.shardingsphere.shardingjdbc.jdbc.adapter;
 import com.google.common.base.Preconditions;
 import io.shardingsphere.core.bootstrap.ShardingBootstrap;
 import io.shardingsphere.core.constant.DatabaseType;
+import io.shardingsphere.core.util.ReflectiveUtil;
 import io.shardingsphere.shardingjdbc.jdbc.unsupported.AbstractUnsupportedOperationDataSource;
-import io.shardingsphere.spi.transaction.xa.DataSourceMapConverter;
-import io.shardingsphere.spi.transaction.xa.SPIDataSourceMapConverter;
+import io.shardingsphere.transaction.spi.xa.DataSourceMapConverter;
+import io.shardingsphere.transaction.core.loader.SPIDataSourceMapConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -113,7 +114,7 @@ public abstract class AbstractDataSourceAdapter extends AbstractUnsupportedOpera
     private void closeDataSource(final Map<String, DataSource> dataSourceMap) {
         for (DataSource each : dataSourceMap.values()) {
             try {
-                each.getClass().getDeclaredMethod("close").invoke(each);
+                ReflectiveUtil.findMethod(each, "close").invoke(each);
             } catch (final ReflectiveOperationException ignored) {
             }
         }

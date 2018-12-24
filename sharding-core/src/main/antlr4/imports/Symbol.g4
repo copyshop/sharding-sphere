@@ -1,9 +1,8 @@
 lexer grammar Symbol;
-    
+
 AND_: '&&';
 OR_: '||';
 NOT_: '!';
-
 UNARY_BIT_COMPLEMENT: '~';
 BIT_INCLUSIVE_OR: '|';
 BIT_AND: '&';
@@ -12,13 +11,13 @@ SIGNED_RIGHT_SHIFT: '>>';
 BIT_EXCLUSIVE_OR: '^';
 MOD_: '%';
 COLON:':';
-
 PLUS: '+' ;
 MINUS: '-' ;
 ASTERISK: '*' ;
 SLASH: '/' ;
+BACKSLASH: '\\' ;
 DOT: '.';
-
+DOT_ASTERISK: '.*';
 SAFE_EQ: '<=>';
 EQ: '==';
 EQ_: '=';
@@ -29,7 +28,6 @@ GTE: '>=';
 LT: '<' ;
 LTE: '<=' ;
 POUND_: '#';
-
 LP_: '(';
 RP_: ')';
 LBE_: '{';
@@ -42,8 +40,7 @@ SQ_: '\'';
 BQ_: '`';
 UL_: '_';
 QUESTION: '?' ;
-AT_:'@';
-
+AT_: '@';
 fragment A: [Aa];
 fragment B: [Bb];
 fragment C: [Cc];

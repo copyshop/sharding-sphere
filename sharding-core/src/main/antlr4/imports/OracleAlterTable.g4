@@ -3,48 +3,36 @@ grammar OracleAlterTable;
 import OracleKeyword, DataType, Keyword,OracleCreateIndex, OracleTableBase,OracleBase,BaseRule,Symbol;
 
 alterTable
-    : ALTER TABLE tableName
-     ( alterTableProperties
-     | columnClauses
-     | constraintClauses
-     | alterExternalTable
-    )?
+    : ALTER TABLE tableName (alterTableProperties | columnClauses | constraintClauses | alterExternalTable)?
     ;
     
 alterTableProperties
-    : renameTable
-    | REKEY encryptionSpec
+    : renameTable | REKEY encryptionSpec
     ;
-
+    
 renameTable:
     RENAME TO tableName
     ;
-
+    
 columnClauses
-    : opColumnClause+
-    | renameColumn
+    : opColumnClause+ | renameColumn
     ;
-
+    
 opColumnClause
-    : addColumn
-    | modifyColumn
-    | dropColumnClause
+    : addColumn | modifyColumn | dropColumnClause
     ;
     
 addColumn
     : ADD columnOrVirtualDefinitions columnProperties?
     ;
-
+    
 columnOrVirtualDefinitions
-    : LP_ columnOrVirtualDefinition
-        (COMMA columnOrVirtualDefinition)* 
-      RP_
+    : LP_ columnOrVirtualDefinition (COMMA columnOrVirtualDefinition)* RP_
     | columnOrVirtualDefinition
     ;
     
-columnOrVirtualDefinition:
-    columnDefinition 
-    | virtualColumnDefinition
+columnOrVirtualDefinition
+    : columnDefinition | virtualColumnDefinition
     ;
     
 modifyColumn
@@ -56,36 +44,30 @@ modifyColumn
     ;
     
 modifyColProperties
-    : columnName dataType?
-    (DEFAULT expr)?
-    (ENCRYPT encryptionSpec | DECRYPT)?
-    inlineConstraint* 
+    : columnName dataType? (DEFAULT expr)?
+    (ENCRYPT encryptionSpec | DECRYPT)? inlineConstraint* 
     ;
     
 modifyColSubstitutable
-    : COLUMN columnName
-    NOT? SUBSTITUTABLE AT ALL LEVELS FORCE?
+    : COLUMN columnName NOT? SUBSTITUTABLE AT ALL LEVELS FORCE?
+    ;
+
+dropColumnClause
+    : SET UNUSED columnOrColumnList cascadeOrInvalidate* | dropColumn
     ;
     
-dropColumnClause
-    : SET UNUSED columnOrColumnList cascadeOrInvalidate*
-    | dropColumn
-    ;
-
 dropColumn
     : DROP columnOrColumnList cascadeOrInvalidate* checkpointNumber?
-	;
-	
+    ;
+    
 columnOrColumnList
-    : COLUMN columnName
-    | LP_ columnName ( COMMA columnName )* RP_
+    : COLUMN columnName | LP_ columnName ( COMMA columnName )* RP_
     ;
-
+    
 cascadeOrInvalidate
-    : CASCADE CONSTRAINTS
-    | INVALIDATE
+    : CASCADE CONSTRAINTS | INVALIDATE
     ;
-
+    
 checkpointNumber
     : CHECKPOINT NUMBER
     ;
@@ -95,49 +77,41 @@ renameColumn
     ;
     
 constraintClauses
-    : addConstraintClause
-    | modifyConstraintClause
-    | renameConstraintClause
-    | dropConstraintClause+
+    : addConstraint | modifyConstraintClause | renameConstraintClause | dropConstraintClause+
     ;
     
-addConstraintClause
+addConstraint
     : ADD (outOfLineConstraint+ | outOfLineRefConstraint)
     ;
-
+    
 modifyConstraintClause
-    : MODIFY constraintOption constraintState CASCADE?
+    : MODIFY constraintOption constraintState+ CASCADE?
     ;
-
+    
 constraintWithName
     : CONSTRAINT constraintName
-    ;    
+    ;
     
 constraintOption
-    : constraintWithName
-    | constraintPrimaryOrUnique
+    : constraintWithName | constraintPrimaryOrUnique
     ;
- 
+    
 constraintPrimaryOrUnique
-    : primaryKey
-    | UNIQUE columnList
+    : primaryKey | UNIQUE columnList
     ;
-        
+    
 renameConstraintClause
     : RENAME constraintWithName TO constraintName
     ;
-   
+    
 dropConstraintClause
     : DROP
     (
-        (constraintPrimaryOrUnique CASCADE? (( KEEP | DROP) INDEX)?)
-       | (CONSTRAINT constraintName ( CASCADE )?)
+        constraintPrimaryOrUnique CASCADE? ((KEEP | DROP) INDEX)?
+       | (CONSTRAINT constraintName CASCADE?)
     ) 
     ;
-
+    
 alterExternalTable
-    : ( addColumn
-    | modifyColumn
-    | dropColumn
-    )+
+    : (addColumn | modifyColumn | dropColumn)+
     ;

@@ -18,14 +18,13 @@
 package io.shardingsphere.shardingjdbc.jdbc.core.datasource;
 
 import io.shardingsphere.api.ConfigMapContext;
-import io.shardingsphere.api.config.MasterSlaveRuleConfiguration;
+import io.shardingsphere.api.config.rule.MasterSlaveRuleConfiguration;
 import io.shardingsphere.core.constant.properties.ShardingProperties;
-import io.shardingsphere.core.constant.properties.ShardingPropertiesConstant;
 import io.shardingsphere.core.constant.transaction.TransactionType;
 import io.shardingsphere.core.rule.MasterSlaveRule;
+import io.shardingsphere.core.transaction.TransactionTypeHolder;
 import io.shardingsphere.shardingjdbc.jdbc.adapter.AbstractDataSourceAdapter;
 import io.shardingsphere.shardingjdbc.jdbc.core.connection.MasterSlaveConnection;
-import io.shardingsphere.shardingjdbc.transaction.TransactionTypeHolder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Database that support master-slave.
+ * Master-slave data source.
  *
  * @author zhangliang
  * @author panjuan
@@ -59,8 +58,7 @@ public class MasterSlaveDataSource extends AbstractDataSourceAdapter {
         shardingProperties = new ShardingProperties(null == props ? new Properties() : props);
     }
     
-    public MasterSlaveDataSource(final Map<String, DataSource> dataSourceMap, final MasterSlaveRule masterSlaveRule,
-                                 final Map<String, Object> configMap, final Properties props) throws SQLException {
+    public MasterSlaveDataSource(final Map<String, DataSource> dataSourceMap, final MasterSlaveRule masterSlaveRule, final Map<String, Object> configMap, final Properties props) throws SQLException {
         super(dataSourceMap);
         if (!configMap.isEmpty()) {
             ConfigMapContext.getInstance().getConfigMap().putAll(configMap);
@@ -80,14 +78,4 @@ public class MasterSlaveDataSource extends AbstractDataSourceAdapter {
         }
         return new MasterSlaveConnection(this, getDataSourceMap());
     }
-    
-    /**
-     * Show SQL or not.
-     *
-     * @return show SQL or not
-     */
-    public boolean showSQL() {
-        return shardingProperties.getValue(ShardingPropertiesConstant.SQL_SHOW);
-    }
 }
-

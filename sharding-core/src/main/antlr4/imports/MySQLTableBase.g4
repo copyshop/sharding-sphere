@@ -5,17 +5,16 @@ import MySQLKeyword, Keyword, MySQLBase, BaseRule, DataType, Symbol;
 columnDefinition
     : columnName dataType (dataTypeOption* | dataTypeGenerated)?
     ;
-
+    
 dataType
     : typeName dataTypeLength? characterSet? collateClause? UNSIGNED? ZEROFILL?
     | typeName (LP_ STRING (COMMA STRING)* RP_ characterSet? collateClause?)
     ;
- 
+    
  typeName
-    : DOUBLE PRECISION
-    | ID
+    : DOUBLE PRECISION | ID
     ;
-
+    
 dataTypeOption
     : dataTypeGeneratedOption
     | DEFAULT? defaultValue
@@ -24,14 +23,11 @@ dataTypeOption
     | STORAGE (DISK | MEMORY | DEFAULT)
     | referenceDefinition
     ;
-
+    
 dataTypeGeneratedOption
-    : nullNotnull
-    | UNIQUE KEY?
-    | primaryKey
-    | COMMENT STRING
+    : NULL | NOT NULL | UNIQUE KEY? | primaryKey | COMMENT STRING
     ;
-
+    
 defaultValue
     : NULL
     | NUMBER
@@ -39,60 +35,51 @@ defaultValue
     | currentTimestampType (ON UPDATE currentTimestampType)?
     | ON UPDATE currentTimestampType
     ;
-
+    
 currentTimestampType
     : (CURRENT_TIMESTAMP | LOCALTIME | LOCALTIMESTAMP | NOW | NUMBER) dataTypeLength?
     ;
-
+    
 referenceDefinition
-    : REFERENCES tableName keyPartsWithParen
-    (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)?
-    referenceType*
+    : REFERENCES tableName keyPartsWithParen (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? referenceType*
     ;
-
+    
 referenceType
-    : ON UPDATE referenceOption
-    | ON DELETE referenceOption
+    : ON (UPDATE  | DELETE) referenceOption
     ;
-
+    
 referenceOption
-    : RESTRICT
-    | CASCADE
-    | SET NULL
-    | NO ACTION
-    | SET DEFAULT
+    : RESTRICT | CASCADE | SET NULL | NO ACTION | SET DEFAULT
     ;
-
+    
 dataTypeGenerated
-    : (GENERATED ALWAYS)? AS expr
-    (VIRTUAL | STORED)?
-    dataTypeGeneratedOption*
+    : (GENERATED ALWAYS)? AS expr (VIRTUAL | STORED)? dataTypeGeneratedOption*
     ;
-
+    
 constraintDefinition
     : (CONSTRAINT symbol?)? (primaryKeyOption | uniqueOption | foreignKeyOption)
     ;
-
+    
 primaryKeyOption
     : primaryKey indexType? columnList indexOption*
     ;
-
+    
 uniqueOption
     : UNIQUE indexAndKey? indexName? indexType? keyPartsWithParen indexOption*
     ;
-
+    
 foreignKeyOption
     : FOREIGN KEY indexName? columnNamesWithParen referenceDefinition
     ;
-
+    
 indexDefinition
     : (FULLTEXT | SPATIAL)? indexAndKey? indexName? indexType? keyPartsWithParen indexOption*
     ;
-
+    
 tableOptions
     : tableOption (COMMA? tableOption)*
     ;
-
+    
 tableOption
     : AUTO_INCREMENT EQ_? NUMBER
     | AVG_ROW_LENGTH EQ_? NUMBER
@@ -118,45 +105,41 @@ tableOption
     | TABLESPACE tablespaceName (STORAGE (DISK | MEMORY | DEFAULT))?
     | UNION EQ_? tableNamesWithParen
     ;
-
+    
 engineName
-    : ID
-    | MEMORY
+    : ID | MEMORY
     ;
-
+    
 partitionOptions
-    : PARTITION BY (linearPartition | rangeOrListPartition)
-    (PARTITIONS NUMBER)?
-    (SUBPARTITION BY linearPartition (SUBPARTITIONS NUMBER)? )?
-    (LP_ partitionDefinitions RP_)?
+    : PARTITION BY (linearPartition | rangeOrListPartition) (PARTITIONS NUMBER)?
+    (SUBPARTITION BY linearPartition (SUBPARTITIONS NUMBER)? )? (LP_ partitionDefinitions RP_)?
     ;
-
-//hash(YEAR(col)) YEAR is keyword which does not match expr
+    
 linearPartition
     : LINEAR? (HASH (yearFunctionExpr | expr) | KEY (ALGORITHM EQ_ NUMBER)? columnNamesWithParen)
     ;
-
+    
 yearFunctionExpr
     : LP_ YEAR expr RP_
     ;
-
+    
 rangeOrListPartition
     : (RANGE | LIST) (expr | COLUMNS columnNamesWithParen)
     ;
-
+    
 partitionDefinitions
     : partitionDefinition (COMMA partitionDefinition)*
     ;
-
+    
 partitionDefinition
     : PARTITION partitionName
     (VALUES (lessThanPartition | IN valueListWithParen))?
     partitionDefinitionOption*
     (LP_ subpartitionDefinition (COMMA subpartitionDefinition)* RP_)?
     ;
-
+    
 partitionDefinitionOption
-    : (STORAGE)? ENGINE EQ_? engineName
+    : STORAGE? ENGINE EQ_? engineName
     | COMMENT EQ_? STRING
     | DATA DIRECTORY EQ_? STRING
     | INDEX DIRECTORY EQ_? STRING
@@ -164,12 +147,11 @@ partitionDefinitionOption
     | MIN_ROWS EQ_? NUMBER
     | TABLESPACE EQ_? tablespaceName
     ;
-
+    
 lessThanPartition
     : LESS THAN (LP_ (expr | valueList) RP_ | MAXVALUE)
     ;
-
+    
 subpartitionDefinition
-    : SUBPARTITION partitionName
-    partitionDefinitionOption*
+    : SUBPARTITION partitionName partitionDefinitionOption*
     ;
